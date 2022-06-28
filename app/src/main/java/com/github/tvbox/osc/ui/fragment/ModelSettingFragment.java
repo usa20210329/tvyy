@@ -31,6 +31,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import okhttp3.HttpUrl;
@@ -51,7 +52,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
     private TextView tvApi;
     private TextView tvHomeApi;
     private TextView tvDns;
-    private TextView tvHomeRec;
+    private TextView tvHomeRecommend;
     private TextView tvSearchView;
 
     public static ModelSettingFragment newInstance() {
@@ -78,14 +79,14 @@ public class ModelSettingFragment extends BaseLazyFragment {
         tvApi = findViewById(R.id.tvApi);
         tvHomeApi = findViewById(R.id.tvHomeApi);
         tvDns = findViewById(R.id.tvDns);
-        tvHomeRec = findViewById(R.id.tvHomeRec);
+        tvHomeRecommend = findViewById(R.id.tvHomeRecommend);
         tvSearchView = findViewById(R.id.tvSearchView);
         tvMediaCodec.setText(Hawk.get(HawkConfig.IJK_CODEC, ""));
         tvDebugOpen.setText(Hawk.get(HawkConfig.DEBUG_OPEN, false) ? "已打开" : "已关闭");
         tvParseWebView.setText(Hawk.get(HawkConfig.PARSE_WEBVIEW, true) ? "系统自带" : "XWalkView");
         tvApi.setText(Hawk.get(HawkConfig.API_URL, ""));
         tvDns.setText(OkGoHelper.dnsHttpsList.get(Hawk.get(HawkConfig.DOH_URL, 0)));
-        tvHomeRec.setText(getHomeRecName(Hawk.get(HawkConfig.HOME_REC, 0)));
+        tvHomeRecommend.setText(getHomeRecommendName(Hawk.get(HawkConfig.HOME_RECOMMEND, 0)));
         tvSearchView.setText(getSearchView(Hawk.get(HawkConfig.SEARCH_VIEW, 0)));
         tvHomeApi.setText(ApiConfig.get().getHomeSourceBean().getName());
         tvScale.setText(PlayerHelper.getScaleName(Hawk.get(HawkConfig.PLAY_SCALE, 0)));
@@ -383,27 +384,24 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 dialog.show();
             }
         });
-        findViewById(R.id.llHomeRec).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.llHomeRecommend).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 FastClickCheckUtil.check(v);
-                int defaultPos = Hawk.get(HawkConfig.HOME_REC, 0);
-                ArrayList<Integer> types = new ArrayList<>();
-                types.add(0);
-                types.add(1);
-                types.add(2);
+                int defaultPos = Hawk.get(HawkConfig.HOME_RECOMMEND, 0);
+                List<Integer> sources = Arrays.asList(0, 1, 2, 3);
                 SelectDialog<Integer> dialog = new SelectDialog<>(mActivity);
-                dialog.setTip("请选择首页列表数据");
+                dialog.setTip("请选热门视频数据源");
                 dialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<Integer>() {
                     @Override
                     public void click(Integer value, int pos) {
-                        Hawk.put(HawkConfig.HOME_REC, value);
-                        tvHomeRec.setText(getHomeRecName(value));
+                        Hawk.put(HawkConfig.HOME_RECOMMEND, value);
+                        tvHomeRecommend.setText(getHomeRecommendName(value));
                     }
 
                     @Override
                     public String getDisplay(Integer val) {
-                        return getHomeRecName(val);
+                        return getHomeRecommendName(val);
                     }
                 }, new DiffUtil.ItemCallback<Integer>() {
                     @Override
@@ -415,7 +413,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
                     public boolean areContentsTheSame(@NonNull @NotNull Integer oldItem, @NonNull @NotNull Integer newItem) {
                         return oldItem.intValue() == newItem.intValue();
                     }
-                }, types, defaultPos);
+                }, sources, defaultPos);
                 dialog.show();
             }
         });
@@ -462,19 +460,16 @@ public class ModelSettingFragment extends BaseLazyFragment {
         };
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        SettingActivity.callback = null;
-    }
-
-    String getHomeRecName(int type) {
-        if (type == 1) {
-            return "站点推荐";
-        } else if (type == 2) {
-            return "观看历史";
-        } else {
-            return "豆瓣热播";
+    private String getHomeRecommendName(int source) {
+        switch (source) {
+            case 1:
+                return "站点推荐";
+            case 2:
+                return "豆瓣电影热榜";
+            case 3:
+                return "豆瓣电视剧热榜";
+            default:
+                return "历史记录";
         }
     }
 
@@ -484,5 +479,11 @@ public class ModelSettingFragment extends BaseLazyFragment {
         } else {
             return "缩略图";
         }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        SettingActivity.callback = null;
     }
 }

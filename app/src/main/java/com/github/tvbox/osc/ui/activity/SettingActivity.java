@@ -44,7 +44,7 @@ public class SettingActivity extends BaseActivity {
     private Handler mHandler = new Handler();
     private String homeSourceKey;
     private String currentApi;
-    private int homeRec;
+    private int currentHomeRecommend;
     private int dnsOpt;
 
     @Override
@@ -108,7 +108,7 @@ public class SettingActivity extends BaseActivity {
     private void initData() {
         currentApi = Hawk.get(HawkConfig.API_URL, "");
         homeSourceKey = ApiConfig.get().getHomeSourceBean().getKey();
-        homeRec = Hawk.get(HawkConfig.HOME_REC, 0);
+        currentHomeRecommend = Hawk.get(HawkConfig.HOME_RECOMMEND, 0);
         dnsOpt = Hawk.get(HawkConfig.DOH_URL, 0);
         List<String> sortList = new ArrayList<>();
         sortList.add("设置其他");
@@ -179,7 +179,8 @@ public class SettingActivity extends BaseActivity {
     public void onBackPressed() {
         if ((homeSourceKey != null && !homeSourceKey.equals(Hawk.get(HawkConfig.HOME_API, ""))) ||
                 !currentApi.equals(Hawk.get(HawkConfig.API_URL, "")) ||
-                homeRec != Hawk.get(HawkConfig.HOME_REC, 0) ||
+                !currentApi.equals(Hawk.get(HawkConfig.API_URL, "")) ||
+                currentHomeRecommend != Hawk.get(HawkConfig.HOME_RECOMMEND, 0) ||
                 dnsOpt != Hawk.get(HawkConfig.DOH_URL, 0)) {
             AppManager.getInstance().finishAllActivity();
             if (currentApi.equals(Hawk.get(HawkConfig.API_URL, ""))) {
