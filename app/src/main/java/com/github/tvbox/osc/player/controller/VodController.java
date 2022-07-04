@@ -1,6 +1,8 @@
 package com.github.tvbox.osc.player.controller;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Handler;
 import android.os.Message;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -30,6 +32,8 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import xyz.doikki.videoplayer.player.VideoView;
@@ -88,6 +92,7 @@ public class VodController extends BaseController {
     LinearLayout mParseRoot;
     TvRecyclerView mGridView;
     TextView mPlayTitle;
+    TextView mSystemTime;
     TextView mNextBtn;
     TextView mPreBtn;
     TextView mPlayerScaleBtn;
@@ -99,12 +104,27 @@ public class VodController extends BaseController {
     TextView mPlayerTimeSkipBtn;
     TextView mPlayerTimeStepBtn;
 
+    private Runnable mRunnable = new Runnable() {
+        @SuppressLint({"DefaultLocale", "SetTextI18n"})
+        @Override
+        public void run() {
+            Date date = new Date();
+            @SuppressLint("SimpleDateFormat")
+            SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+            mSystemTime.setText(timeFormat.format(date));
+            mHandler.postDelayed(this, 1000);
+        }
+    };
+
+    private Handler mHandler = new Handler();
+
     @Override
     protected void initView() {
         super.initView();
         mCurrentTime = findViewById(R.id.curr_time);
         mTotalTime = findViewById(R.id.total_time);
         mPlayTitle = findViewById(R.id.tv_info_name);
+        mSystemTime = findViewById(R.id.tv_system_time);
         mSeekBar = findViewById(R.id.seekBar);
         mProgressRoot = findViewById(R.id.tv_progress_container);
         mProgressIcon = findViewById(R.id.tv_progress_icon);
@@ -489,9 +509,11 @@ public class VodController extends BaseController {
             case VideoView.STATE_IDLE:
                 break;
             case VideoView.STATE_PLAYING:
+                mHandler.removeCallbacks(mRunnable);
                 startProgress();
                 break;
             case VideoView.STATE_PAUSED:
+                mHandler.post(mRunnable);
                 break;
             case VideoView.STATE_ERROR:
                 listener.errReplay();
@@ -576,10 +598,14 @@ public class VodController extends BaseController {
         if (super.onBackPressed()) {
             return true;
         }
+
+        mHandler.removeCallbacks(mRunnable);
+
         if (isBottomVisible()) {
             hideBottom();
             return true;
         }
+
         return false;
     }
 }
